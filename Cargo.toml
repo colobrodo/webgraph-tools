@@ -1,0 +1,13 @@
+[package]
+name = "webgraph-tools"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.100"
+clap = { version = "4.5.48", features = ["derive"] }
+log = "0.4.22"
+dsi-bitstream = "0.5.0"
+dsi-progress-logger = "0.8.2"
+lender = "0.3.2"
+webgraph = "0.3.0"
