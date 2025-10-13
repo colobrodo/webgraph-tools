@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::Command;
 
 pub mod dissect;
+pub mod run;
 pub mod to;
 
 pub fn main() -> Result<()> {
@@ -19,6 +20,7 @@ TMPDIR: where to store temporary files (potentially very large ones)
 
     let command = to::cli(command);
     let command = dissect::cli(command);
+    let command = run::cli(command);
     let command = command.display_order(0); // sort args alphabetically
     let mut completion_command = command.clone();
     let matches = command.get_matches_from(args);
@@ -30,6 +32,7 @@ TMPDIR: where to store temporary files (potentially very large ones)
     }
     match subcommand.unwrap() {
         (to::COMMAND_NAME, sub_m) => to::main(sub_m),
+        (run::COMMAND_NAME, sub_m) => run::main(sub_m),
         (dissect::COMMAND_NAME, sub_m) => dissect::main(sub_m),
         (command_name, _) => {
             // this shouldn't happen as clap should catch this
