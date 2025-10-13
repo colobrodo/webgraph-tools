@@ -16,9 +16,7 @@ pub const COMMAND_NAME: &str = "rgb";
 #[derive(Args, Debug)]
 #[command(
     about = "Reorder the graph using the Recursive Graph Bisection algorithm",
-    long_about = "Reorder the graph using the Recursive Graph Bisection algorithm,
- based on the implementation https://github.com/mpetri/faster-graph-bisection from the paper
- \"Faster Index Reordering with Bipartite Graph Partitioning by Joel Mackenzie, Matthias Petri, and Alistair Moffat\"."
+    long_about = "Reorder the graph using the Recursive Graph Bisection algorithm, based on the implementation https://github.com/mpetri/faster-graph-bisection from the paper \"Faster Index Reordering with Bipartite Graph Partitioning by Joel Mackenzie, Matthias Petri, and Alistair Moffat\"."
 )]
 pub struct CliArgs {
     /// The basename of the source graph.
