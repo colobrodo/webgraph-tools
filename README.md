@@ -1,4 +1,4 @@
-# WebGraph Tool
+# WebGraph Tools
 This is a collection of tools related to webgraph.
 
 ## Current tools
