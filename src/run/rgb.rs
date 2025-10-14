@@ -39,6 +39,16 @@ pub struct CliArgs {
     /// Sort the leafs by identifier id
     #[arg(long)]
     sort_leaf: bool,
+
+    /// If specified even the clusters are saved and not only the permutation.
+    /// The resulting format is the following:
+    ///  - the size of permutation
+    ///  - the permutation itself
+    ///  - the number of partitions
+    ///  - the endpoints of each partition, so the prefix sum of the cluster sizes
+    /// All the integers are represented as u64 written in big endian format.
+    #[arg(long)]
+    save_clusters: bool,
 }
 
 // TODO: this functions are duplicated from webgraph but they are not exposed.
@@ -75,6 +85,86 @@ fn store_perm(data: &[usize], perm: impl AsRef<Path>) -> Result<()> {
 
 pub fn cli(command: Command) -> Command {
     command.subcommand(CliArgs::augment_args(Command::new(COMMAND_NAME)).display_order(0))
+}
+
+pub fn compute_partitions_size(
+    n: usize,
+    min_partition_size: usize,
+    max_depth: usize,
+) -> Vec<usize> {
+    let mut out = Vec::new();
+    if n == 0 {
+        return out; // nothing to partition
+    }
+
+    fn helper(size: usize, depth: usize, min_size: usize, max_depth: usize, out: &mut Vec<usize>) {
+        if size <= min_size || depth >= max_depth {
+            out.push(size);
+        } else {
+            let left = size / 2;
+            let right = size - left;
+            // left then right to preserve left-to-right ordering
+            helper(left, depth + 1, min_size, max_depth, out);
+            helper(right, depth + 1, min_size, max_depth, out);
+        }
+    }
+
+    helper(n, 1, min_partition_size, max_depth, &mut out);
+    // compute the partial sums over the partition array
+    let mut previous_sizes = 0;
+    for partition in out.iter_mut() {
+        *partition += previous_sizes;
+        previous_sizes = *partition;
+    }
+    out
+}
+
+pub fn store_clustr_file(
+    perm: &[usize],
+    cluster_sizes: &[usize],
+    path: impl AsRef<Path>,
+) -> Result<()> {
+    let mut file = std::fs::File::create(&path).with_context(|| {
+        format!(
+            "Could not create permutation at {}",
+            path.as_ref().display()
+        )
+    })?;
+    let mut buf = BufWriter::new(&mut file);
+
+    // write the permutation
+    println!("Writing permutation of len {}", perm.len());
+    buf.write_all(&perm.len().to_be_bytes()).with_context(|| {
+        format!(
+            "Could not write permutation size to {}",
+            path.as_ref().display()
+        )
+    })?;
+    for word in perm.iter() {
+        buf.write_all(&word.to_be_bytes()).with_context(|| {
+            format!("Could not write permutation to {}", path.as_ref().display())
+        })?;
+    }
+    // write the cluster sizes
+    println!("Writing {} clusters", cluster_sizes.len());
+    buf.write_all(&cluster_sizes.len().to_be_bytes())
+        .with_context(|| {
+            format!(
+                "Could not write number of clusters to {}",
+                path.as_ref().display()
+            )
+        })?;
+    for cluster_size in cluster_sizes.iter() {
+        buf.write_all(&cluster_size.to_be_bytes())
+            .with_context(|| {
+                format!(
+                    "Could not write cluster size to {}",
+                    path.as_ref().display()
+                )
+            })?;
+    }
+
+    Ok(())
 }
 
 pub fn main(submatches: &ArgMatches) -> Result<()> {
@@ -136,7 +226,13 @@ pub fn main(submatches: &ArgMatches) -> Result<()> {
     for (new_id, document) in documents.iter().enumerate() {
         perm[document.org_id as usize] = new_id;
     }
-    store_perm(&perm, args.dst)?;
+    if args.save_clusters {
+        let partitions_end_points =
+            compute_partitions_size(graph.num_nodes(), args.min_partition_size, args.max_depth);
+        store_clustr_file(&perm, &partitions_end_points, args.dst)?;
+    } else {
+        store_perm(&perm, args.dst)?;
+    }
     pl.done();
 
     log::info!(
