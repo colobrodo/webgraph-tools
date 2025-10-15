@@ -189,16 +189,20 @@ pub fn main(submatches: &ArgMatches) -> Result<()> {
         graph.num_nodes()
     ));
 
-    let mut documents = Vec::with_capacity(graph.num_nodes());
-    let mut iter = graph.iter();
-    while let Some((node_id, succs)) = iter.next() {
-        let doc = rgb::forward::Doc {
-            postings: Vec::from_iter(succs.map(|succ_id| (succ_id as _, 1u32))),
+    let mut documents = (0..graph.num_nodes())
+        .map(|node_id| rgb::forward::Doc {
+            postings: Vec::new(),
             org_id: node_id as _,
             gain: 0.0,
             leaf_id: -1,
-        };
-        documents.push(doc);
+        })
+        .collect::<Vec<_>>();
+    let mut iter = graph.iter();
+    // documents are successors: run rgb on the permuted graph
+    while let Some((node_id, succs)) = iter.next() {
+        for successor in succs {
+            documents[successor].postings.push((node_id as _, 1));
+        }
         pl.update();
     }
     pl.done();
