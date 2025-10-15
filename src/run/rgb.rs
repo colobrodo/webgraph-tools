@@ -38,7 +38,7 @@ pub struct CliArgs {
 
     /// Sort the leafs by identifier id
     #[arg(long)]
-    sort_leaf: bool,
+    sort_leafs: bool,
 
     /// If specified even the clusters are saved and not only the permutation.
     /// The resulting format is the following:
