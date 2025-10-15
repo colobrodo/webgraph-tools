@@ -229,6 +229,7 @@ pub fn main(submatches: &ArgMatches) -> Result<()> {
     if args.save_clusters {
         let partitions_end_points =
             compute_partitions_size(graph.num_nodes(), args.min_partition_size, args.max_depth);
+        assert_eq!(*partitions_end_points.last().unwrap(), graph.num_nodes());
         store_clustr_file(&perm, &partitions_end_points, args.dst)?;
     } else {
         store_perm(&perm, args.dst)?;
