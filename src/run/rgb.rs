@@ -219,7 +219,7 @@ pub fn main(submatches: &ArgMatches) -> Result<()> {
         args.min_partition_size,
         args.max_depth,
         1, // starting depth
-        args.sort_leaf,
+        args.sort_leafs,
     );
 
     let mut perm = vec![0; graph.num_nodes()];
