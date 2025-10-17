@@ -6,8 +6,7 @@ use lender::*;
 use std::path::PathBuf;
 use webgraph::prelude::*;
 
-mod dec_stats_and_count;
-use dec_stats_and_count::*;
+use crate::analyze::StatsAndCountDecoderFactory;
 
 pub const COMMAND_NAME: &str = "dissect";
 

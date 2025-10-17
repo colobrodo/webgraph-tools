@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Command;
 
-pub mod dissect;
+pub mod analyze;
 pub mod run;
 pub mod to;
 
@@ -19,7 +19,7 @@ TMPDIR: where to store temporary files (potentially very large ones)
         );
 
     let command = to::cli(command);
-    let command = dissect::cli(command);
+    let command = analyze::cli(command);
     let command = run::cli(command);
     let command = command.display_order(0); // sort args alphabetically
     let mut completion_command = command.clone();
@@ -33,7 +33,7 @@ TMPDIR: where to store temporary files (potentially very large ones)
     match subcommand.unwrap() {
         (to::COMMAND_NAME, sub_m) => to::main(sub_m),
         (run::COMMAND_NAME, sub_m) => run::main(sub_m),
-        (dissect::COMMAND_NAME, sub_m) => dissect::main(sub_m),
+        (analyze::COMMAND_NAME, sub_m) => analyze::main(sub_m),
         (command_name, _) => {
             // this shouldn't happen as clap should catch this
             eprintln!("Unknown command: {:?}", command_name);
