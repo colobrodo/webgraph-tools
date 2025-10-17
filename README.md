@@ -3,7 +3,7 @@ This is a collection of tools related to WebGraph [1, 3].
 
 ## Current tools
 - `to bin`: Convert the BvGraph file (passed as basename) to an uncompressed "bin" format used also by Zuckerli [2] and other tools. 
-- `dissect`: Print how many bits are used by each component of the graph. 
+- `analyze dissect`: Print how many bits are used by each component of the graph. 
 - `run rgb`: Return a permutation (in a webgraph-compatible format) for the graph using the Recursive Graph Bisection algorithm, that uses [4].
    In order to compile the code using this command you should specify the `GAIN` env variable during the compilation to choose a gain approximation function (choose between `approx_1`, `default` or `approx_2`).
    For example:
