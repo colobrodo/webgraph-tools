@@ -3,7 +3,11 @@ use clap::{ArgMatches, Command};
 
 mod dec_stats_and_count;
 pub mod dissect;
+pub mod print;
 use dec_stats_and_count::*;
+mod component;
+mod consume_decoder;
+use consume_decoder::*;
 
 pub const COMMAND_NAME: &str = "analyze";
 
@@ -14,12 +18,14 @@ pub fn cli(command: Command) -> Command {
         .arg_required_else_help(true)
         .allow_external_subcommands(true);
     let sub_command = dissect::cli(sub_command);
+    let sub_command = print::cli(sub_command);
     command.subcommand(sub_command.display_order(0))
 }
 
 pub fn main(submatches: &ArgMatches) -> Result<()> {
     match submatches.subcommand() {
         Some((dissect::COMMAND_NAME, sub_m)) => dissect::main(sub_m),
+        Some((print::COMMAND_NAME, sub_m)) => print::main(sub_m),
         Some((command_name, _)) => {
             eprintln!("Unknown command: {:?}", command_name);
             std::process::exit(1);
