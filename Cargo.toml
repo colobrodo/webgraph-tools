@@ -12,4 +12,4 @@ dsi-bitstream = "0.5.0"
 dsi-progress-logger = "0.8.2"
 lender = "0.3.2"
 webgraph = "0.3.0"
-rgb = { git = "https://github.com/mpetri/faster-graph-bisection", version = "0.1.0" }
+rgb = { git = "https://github.com/JMMackenzie/enhanced-graph-bisection", version = "0.1.0" }

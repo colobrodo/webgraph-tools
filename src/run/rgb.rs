@@ -16,7 +16,7 @@ pub const COMMAND_NAME: &str = "rgb";
 #[derive(Args, Debug)]
 #[command(
     about = "Reorder the graph using the Recursive Graph Bisection algorithm",
-    long_about = "Reorder the graph using the Recursive Graph Bisection algorithm, based on the implementation https://github.com/mpetri/faster-graph-bisection from the paper \"Faster Index Reordering with Bipartite Graph Partitioning by Joel Mackenzie, Matthias Petri, and Alistair Moffat\"."
+    long_about = "Reorder the graph using the Recursive Graph Bisection algorithm, based on the implementation https://github.com/JMMackenzie/enhanced-graph-bisection from the paper \"Faster Index Reordering with Bipartite Graph Partitioning by Joel Mackenzie, Matthias Petri, and Alistair Moffat\"."
 )]
 pub struct CliArgs {
     /// The basename of the source graph.
@@ -39,6 +39,11 @@ pub struct CliArgs {
     /// Sort the leafs by identifier id
     #[arg(long)]
     sort_leafs: bool,
+
+    /// This parameter specify a maximum depth after which the algorithm switches to a
+    /// sequential version of the algorithm to avoid thread contention.
+    #[arg(short, long, default_value = "10")]
+    parallel_switch: usize,
 
     /// If specified even the clusters are saved and not only the permutation.
     /// The resulting format is the following:
@@ -191,7 +196,7 @@ pub fn main(submatches: &ArgMatches) -> Result<()> {
 
     let mut documents = (0..graph.num_nodes())
         .map(|node_id| rgb::forward::Doc {
-            postings: Vec::new(),
+            terms: Vec::new(),
             org_id: node_id as _,
             gain: 0.0,
             leaf_id: -1,
@@ -201,16 +206,16 @@ pub fn main(submatches: &ArgMatches) -> Result<()> {
     // documents are successors: run rgb on the permuted graph
     while let Some((node_id, succs)) = iter.next() {
         for successor in succs {
-            documents[successor].postings.push((node_id as _, 1));
+            documents[successor].terms.push(node_id as _);
         }
         pl.update();
     }
     pl.done();
 
-    documents.sort_by(|a, b| b.postings.len().cmp(&a.postings.len()));
+    documents.sort_by(|a, b| b.terms.len().cmp(&a.terms.len()));
     let num_non_empty = documents
         .iter()
-        .position(|d| d.postings.is_empty())
+        .position(|d| d.terms.is_empty())
         .unwrap_or(documents.len());
     log::info!("{} lists not empty", num_non_empty);
 
@@ -222,8 +227,10 @@ pub fn main(submatches: &ArgMatches) -> Result<()> {
         args.iterations,
         args.min_partition_size,
         args.max_depth,
+        args.parallel_switch,
         1, // starting depth
         args.sort_leafs,
+        1,
     );
 
     let mut perm = vec![0; graph.num_nodes()];

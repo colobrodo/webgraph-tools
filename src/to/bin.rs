@@ -5,7 +5,6 @@ use dsi_bitstream::prelude::*;
 use dsi_progress_logger::prelude::*;
 use lender::Lender;
 use std::{
-    env::temp_dir,
     fs::File,
     io::{copy, BufReader, BufWriter, Read, Write},
     path::{Path, PathBuf},
@@ -294,7 +293,7 @@ pub fn main(submatches: &ArgMatches) -> Result<()> {
     let temp_dir = &tempfile::tempdir()?;
     let mut bin = BinGraphWriter::new(temp_dir.path());
     let mut iter = graph.iter();
-    while let Some((true_node_id, true_succ)) = iter.next() {
+    while let Some((_true_node_id, true_succ)) = iter.next() {
         bin.add_list(true_succ)?;
         pl.update();
     }
