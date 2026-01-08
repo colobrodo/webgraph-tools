@@ -157,7 +157,6 @@ impl BinGraph {
 /// Finally, it is possible to write the entire graph to a single file that conforms to the
 /// bin graph file specification.
 struct BinGraphWriter {
-    temp_path: PathBuf,
     offset_file: PathBuf,
     arc_file: PathBuf,
     offset_writer: BufWriter<File>,
@@ -177,7 +176,6 @@ impl BinGraphWriter {
             BufWriter::new(File::create(&arc_file).expect("Failed to create arc file"));
 
         BinGraphWriter {
-            temp_path: temp_path.to_path_buf(),
             offset_file,
             arc_file,
             offset_writer,
