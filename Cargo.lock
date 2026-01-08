@@ -2118,6 +2118,7 @@ dependencies = [
  "lender",
  "log",
  "rgb",
+ "tempfile",
  "webgraph",
 ]
 
